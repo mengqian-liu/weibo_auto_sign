@@ -13,8 +13,10 @@ import re
 from config import Config
 from libs.stmp_email import send_email
 
-USERNAME = Config.USERNAME  # weibo 账号
-PASSWORD = Config.PASSWORD  # weibo 密码
+#USERNAME = Config.USERNAME  # weibo 账号
+#PASSWORD = Config.PASSWORD  # weibo 密码
+USERDICT = Config.USERDICT
+
 
 class WeiboSign():
     def __init__(self,USERNAME,PASSWORD):
