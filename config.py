@@ -10,8 +10,11 @@ from __future__ import unicode_literals
 class Config:
 
     # 微博账号密码
-    USERNAME = ''
-    PASSWORD = ''
+    #USERNAME = ''
+    #PASSWORD = ''
+    
+    USERDICT = { '×××××@sina.com': '×××××',
+               }
 
     #QQ 邮箱配置
     # Email 地址和口令:
