@@ -12,6 +12,8 @@ from requests import session
 import re
 from config import Config
 from libs.stmp_email import send_email
+import urllib
+
 
 #USERNAME = Config.USERNAME  # weibo 账号
 #PASSWORD = Config.PASSWORD  # weibo 密码
