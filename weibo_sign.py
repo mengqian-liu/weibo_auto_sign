@@ -67,19 +67,34 @@ class WeiboSign():
         datas = self.get_list_data()
         chat_result = list()
         for data in datas:
-            sign_url = "https://weibo.com/p/aj/general/button?api=http://i.huati.weibo.com/aj/super/checkin&id={}".format(data['id'])
-            headers = {
-                'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.15 Safari/537.36',
-                'Cookie':self.cookie
-            }
-            sign_resp = self.session.get(sign_url,headers=headers).json()
-            if sign_resp['code'] == '100000':
-                sign_dict = {
-                    'title_sub':data['title_sub'],
-                    'msg':'签到成功',
-                    'desc1':data['desc1']
-                }
-                chat_result.append(sign_dict)
+            print("准备签到 %s" % data['title_sub'])
+            sign_url = "https://weibo.com/p/aj/general/button?ajwvr=6&api=http://i.huati.weibo.com/aj/super/checkin&id={}".format(data['id'])
+            print(sign_url)
+            req = urllib.request.Request(sign_url)
+            req.add_header('cookie', self.cookie)
+            req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.131 Safari/537.36')
+            resp = urllib.request.urlopen(req)
+            data=resp.read().decode('utf-8')
+            #print(data)	
+            if('100000' in data): print("签到成功")		
+            if('100003' in data): 
+                print("你最近的行为存在异常，请先验证身份后再进行操作")			
+                print(data)            
+            if('382004' in data): print("今天已签到")	            
+            
+            #sign_url = "https://weibo.com/p/aj/general/button?api=http://i.huati.weibo.com/aj/super/checkin&id={}".format(data['id'])
+            #headers = {
+            #    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.15 Safari/537.36',
+            #    'Cookie':self.cookie
+            #}
+            #sign_resp = self.session.get(sign_url,headers=headers).json()
+            #if sign_resp['code'] == '100000':
+            #    sign_dict = {
+            #        'title_sub':data['title_sub'],
+            #        'msg':'签到成功',
+            #        'desc1':data['desc1']
+            #    }
+            #    chat_result.append(sign_dict)
         return chat_result
     def get_list_data(self):
         '''
@@ -101,13 +116,15 @@ class WeiboSign():
         return result
 
 if __name__ == '__main__':
-    weibo = WeiboSign(USERNAME,PASSWORD)
-    weibo.login()
-    sign_data = weibo.chat_sign()
-    result = []
-    for data in sign_data:
-        result.append('超级话题：{} 签到状态：{} 等级：{}\n'.format(data['title_sub'], data['msg'], data['desc1']))
-    result = ''.join(result)
-    if Config.send_methods =='email':
-        send_email(result)
+    for USERNAME,PASSWORD in  USERDICT.items():
+        print("登录%s" % USERNAME)
+        weibo = WeiboSign(USERNAME,PASSWORD)
+        weibo.login()
+        sign_data = weibo.chat_sign()
+#    result = []
+#    for data in sign_data:
+#        result.append('超级话题：{} 签到状态：{} 等级：{}\n'.format(data['title_sub'], data['msg'], data['desc1']))
+#    result = ''.join(result)
+#    if Config.send_methods =='email':
+#        send_email(result)
 # print(weibo.get_list_data())
