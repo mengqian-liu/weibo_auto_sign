@@ -13,12 +13,13 @@ import re
 from config import Config
 from libs.stmp_email import send_email
 import urllib
-
+import random
+import time
 
 #USERNAME = Config.USERNAME  # weibo 账号
 #PASSWORD = Config.PASSWORD  # weibo 密码
 USERDICT = Config.USERDICT
-
+MESSAGE = Config.MESSAGE
 
 class WeiboSign():
     def __init__(self,USERNAME,PASSWORD):
@@ -86,20 +87,69 @@ class WeiboSign():
                 print(data)            
             if('382004' in data): print("今天已签到")	            
             
-            #sign_url = "https://weibo.com/p/aj/general/button?api=http://i.huati.weibo.com/aj/super/checkin&id={}".format(data['id'])
-            #headers = {
-            #    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.15 Safari/537.36',
-            #    'Cookie':self.cookie
-            #}
-            #sign_resp = self.session.get(sign_url,headers=headers).json()
-            #if sign_resp['code'] == '100000':
-            #    sign_dict = {
-            #        'title_sub':data['title_sub'],
-            #        'msg':'签到成功',
-            #        'desc1':data['desc1']
-            #    }
-            #    chat_result.append(sign_dict)
+            #超话评论
+            response = self.session.get(super_url, headers=headers)
+            htmlBody = response.text
+            #print(htmlBody)
+			            
+            uid = re.findall(r"CONFIG\[\'uid\'\]=\'\d{0,20}\'", htmlBody)[0].replace("CONFIG['uid']=","").replace("'","")
+            #page_id = re.findall(r"CONFIG\[\'page_id\'\]=\'\d{0,30}\'", htmlBody)[0].replace("CONFIG['page_id']=","").replace("'","")
+            domain = re.findall(r"CONFIG\[\'domain\'\]=\'\d{0,10}\'", htmlBody)[0].replace("CONFIG['domain']=","").replace("'","")
+            location = re.findall(r"CONFIG\[\'location\'\]=\'.{0,30}\'", htmlBody)[0].replace("CONFIG['location']=","").replace("'","")
+            mid = re.findall(r"mid=\d{1,30}", htmlBody)[0].replace("mid=","").replace("'","")
+            #print(mid)
+			
+            reply_url = 'https://www.weibo.com/aj/v6/comment/add?ajwvr=6&__rnd=%d'%int(round(time.time() * 1000))
+            #print(reply_url)
+            text = random.choice(MESSAGE)
+
+            replyData = {
+                'mid': mid,
+                'uid': uid,		
+                'forward': '0',		
+                'content': text,		
+                'location': 'page_100808_super_index',
+                'module': 'scommlist',
+                'pdetail': id,
+            }
+            respon = self.session.post(reply_url, replyData, headers=headers)	   
+			#respon.json()['code'] == '100000' :
+            if('100000' in respon.text):
+                print("评论成功")
+            else:
+                print("发帖失败")
+
+            #超话发帖
+            post_url = 'https://www.weibo.com/p/aj/proxy?ajwvr=6&__rnd=%d'%int(round(time.time() * 1000))
+            #print(post_url)
+            text = random.choice(MESSAGE)
+            postData = {
+                'location': 'page_100808_super_index',
+                'text': text,
+                'style_type': '1',
+                'pdetail': id,
+                'isReEdit': 'false',
+                'sync_wb': '0',
+                'pub_source': 'page_1',
+                'api': "http://i.huati.weibo.com/pcpage/operation/publisher/sendcontent?sign=super&page_id=" + id ,
+                'object_id': "1022:" + id,
+                'module': 'publish_913',
+                'page_module_id': '913',
+			    'longtest': '1',
+                'topic_id': "1022:" + id,
+                'pub_type': 'dialog',
+                '_t': '0'		
+            }
+            respon = self.session.post(post_url, postData, headers=headers)	   
+            #print(respon.text)
+			#respon.json()['code'] == '100000' :
+            if('100000' in respon.text):
+                print("发帖成功")
+            else:
+                print("发帖失败")
+                
         return chat_result
+    
     def get_list_data(self):
         '''
         解析数据
