@@ -27,3 +27,10 @@ class Config:
 
     #通知方式
     send_methods = 'email'  #
+    
+    # 发博
+    MESSAGE = [
+        r"test msg 1",
+        r"test msg 2",
+        r"test msg 3"
+              ]
